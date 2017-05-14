@@ -8,6 +8,7 @@
  * Copyright 2017 innoirvinge@gmail.com
  */
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.youtube.YouTube;
 
@@ -22,13 +23,18 @@ public class IntruderAlertApplication {
   private static YouTube youtube;
 
   public static void main(String[] args) throws IOException, GeneralSecurityException {
-    Oauth2 oauth2 = OAuthHelper.builder()
+    Credential credential = OAuthHelper.builder()
         .withClientSecret("./src/main/resources/client_secret.json")
         .withApplicationName("Intruder Alerter")
         .withScope("https://www.googleapis.com/auth/youtube")
         .build();
 
-    System.out.println(oauth2);
+    youtube = YoutubeService.builder()
+        .applicationName("Intruder Alerter")
+        .credentials(credential)
+        .build();
+
+    System.out.println(youtube);
 
   }
 
