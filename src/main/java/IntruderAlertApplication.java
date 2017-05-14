@@ -8,12 +8,11 @@
  * Copyright 2017 innoirvinge@gmail.com
  */
 
+import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.youtube.YouTube;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 
-import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 /**
  * @author irving09 <innoirvinge@gmail.com>
@@ -22,9 +21,16 @@ public class IntruderAlertApplication {
 
   private static YouTube youtube;
 
-  public static void main(String[] args) throws IOException {
-    String apiKey = Files.toString(new File("./src/main/resources/api-key.txt"), Charsets.UTF_8);
-    System.out.println(apiKey);
+
+  public static void main(String[] args) throws IOException, GeneralSecurityException {
+    Oauth2 oauth2 = OAuthHelper.builder()
+        .withClientSecret("./src/main/resources/client_secret.json")
+        .withApplicationName("Intruder Alerter")
+        .withScope("https://www.googleapis.com/auth/youtube")
+        .build();
+
+    System.out.println(oauth2);
+
   }
 
 }
