@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
@@ -43,13 +45,7 @@ public class OAuthHelper {
 
     private String applicationName;
 
-    private JsonFactory jsonFactory;
-
-    List<String> scope;
-
-    public OAuthBuilder() {
-      this.jsonFactory = JacksonFactory.getDefaultInstance();
-    }
+    private List<String> scopes;
 
     public OAuthBuilder withClientSecret(final String clientSecretJson) {
       this.clientSecretJson = clientSecretJson;
@@ -62,28 +58,33 @@ public class OAuthHelper {
     }
 
     public OAuthBuilder withScope(final String scope) {
-      this.scope = Collections.singletonList(scope);
+      this.scopes = Collections.singletonList(scope);
       return this;
     }
 
     public Oauth2 build() throws IOException, GeneralSecurityException {
+      JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+
       GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
           jsonFactory,
-          new InputStreamReader(new FileInputStream(clientSecretJson))
+          new InputStreamReader(new FileInputStream(this.clientSecretJson))
       );
 
       NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+      String credentialDataStoreLocation = System.getProperty("user.dir") + "/.oauth-credentials";
+      File credentialDataStore = new File(credentialDataStoreLocation);
 
-      FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(new File(
-          System.getProperty("user.dir"),
-          ".oauth-credentials"
-      ));
+      if (!credentialDataStore.exists()) {
+        Files.createDirectory(Paths.get(credentialDataStoreLocation));
+      }
+
+      FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(credentialDataStore);
 
       GoogleAuthorizationCodeFlow authorizationFlow = new GoogleAuthorizationCodeFlow.Builder(
           httpTransport,
-          this.jsonFactory,
+          jsonFactory,
           clientSecrets,
-          this.scope
+          this.scopes
       ).setDataStoreFactory(dataStoreFactory).build();
 
       LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
@@ -94,7 +95,7 @@ public class OAuthHelper {
           httpTransport,
           jsonFactory,
           credential
-      ).setApplicationName(applicationName)
+      ).setApplicationName(this.applicationName)
           .build();
     }
 

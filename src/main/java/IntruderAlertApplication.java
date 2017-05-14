@@ -21,7 +21,6 @@ public class IntruderAlertApplication {
 
   private static YouTube youtube;
 
-
   public static void main(String[] args) throws IOException, GeneralSecurityException {
     Oauth2 oauth2 = OAuthHelper.builder()
         .withClientSecret("./src/main/resources/client_secret.json")
